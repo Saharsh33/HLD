@@ -1,4 +1,4 @@
-# Comprehensive System Design Notes: Tinder (SDE Internship Prep)
+# Designing Tinder
 
 ## 1. The Universal Interview Framework
 Never jump straight to drawing components or picking databases. Always structure your interview in this exact four-step order:
