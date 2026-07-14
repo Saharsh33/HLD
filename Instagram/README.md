@@ -1,7 +1,4 @@
 # Instagram System Design
-
-*This version keeps all the original content but adds plain-English explanations right where the fancy terms show up, so you don't have to jump to a glossary mid-interview.*
-
 ---
 
 ## 1. Scope & System Requirements
