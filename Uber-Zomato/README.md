@@ -271,29 +271,4 @@ Three approaches, escalating in sophistication:
 - **Google S2 Geometry:** Google Maps and Google-backed services use S2, which projects the globe onto a cube face and fills it with a Hilbert curve, converting 2D spatial proximity into 1D sort order. Mention this as an alternative to H3 if the interviewer asks.
 - **Zomato's Hyperpure:** Zomato vertically integrated their supply chain (Hyperpure supplies raw ingredients to restaurants) — an interesting business-architecture coupling, but not relevant to the tech interview.
 
----
 
-## 9. Quick-Reference Glossary
-
-| Term | One-Line Plain-English Meaning |
-|---|---|
-| **Geohash** | Encoding a GPS coordinate (lat, lng) into a single string so nearby points share a common prefix — enables fast "nearby" lookups |
-| **H3 hexagonal grid** | Uber's system for dividing Earth into hexagon cells — every neighbor is equidistant, making radius queries more accurate than square grids |
-| **GEORADIUS** | A Redis command that returns all items within a given radius of a GPS point, in < 1 ms from RAM |
-| **Surge pricing** | Dynamically raising prices when demand exceeds supply in a zone — a market mechanism to rebalance driver distribution |
-| **Dispatch / matching** | The algorithm that picks the best available driver for a ride request, considering distance, ETA, and driver rating |
-| **Order state machine** | A sequence of states (REQUESTED → MATCHED → PICKED_UP → DELIVERED) that an order transitions through — each transition triggers different downstream actions |
-| **Fire-and-forget** | Sending data without waiting for confirmation — acceptable when the data is ephemeral and the next update arrives in seconds |
-| **Geofencing** | Defining virtual geographic boundaries (e.g., airport pickup zones, surge zones) and triggering actions when a device enters/exits them |
-| **ETA** | Estimated Time of Arrival — computed using live traffic data, road network graphs, and historical speed patterns, not straight-line distance |
-
----
-
-## 10. Talking Points Checklist (for the actual interview)
-
-- [ ] Open with the core challenge: "this is a spatial-write-throughput problem — 1.67M GPS updates/sec — not a typical request-response system"
-- [ ] Explain H3 hexagonal grid or geohash and why it converts a 2D proximity search into a bucket lookup
-- [ ] Walk through the matching flow: GEORADIUS → rank by ETA → atomic claim (SETNX) → Postgres backstop
-- [ ] Raise the double-assignment race condition yourself and explain the Redis + Postgres two-layer fix
-- [ ] Explain surge pricing as a zone-level demand/supply counter in Redis with a sliding window
-- [ ] Mention that the same architecture serves both Uber and Zomato — then call out the product-level differences (food prep time, batching)

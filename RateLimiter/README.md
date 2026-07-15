@@ -289,31 +289,4 @@ Content-Type: application/json
 
 - **Redis Cell module:** an open-source Redis module that implements the Generic Cell Rate Algorithm (GCRA) — a variant of the leaky bucket — natively in Redis as a single atomic command. Worth mentioning as a production shortcut: *"In practice, I'd evaluate Redis Cell for atomic rate limiting without Lua scripts."*
 
----
 
-## 8. Quick-Reference Glossary
-
-| Term | One-Line Plain-English Meaning |
-|---|---|
-| **Token bucket** | A rate-limiting algorithm that allows controlled bursts — tokens accumulate at a fixed rate, and each request costs one token |
-| **Leaky bucket** | A rate-limiting algorithm that outputs requests at a perfectly smooth rate — no bursts, like water dripping from a bucket with a hole |
-| **Sliding window counter** | Counts requests in a rolling time window using weighted averages of adjacent fixed windows — O(1) memory, ~98% accurate |
-| **Sliding window log** | Stores every request's timestamp for perfect accuracy — expensive in memory, used for low-QPS precision cases |
-| **Fixed window counter** | Simplest algorithm — counts requests in clock-aligned intervals. Fast but vulnerable to boundary burst attacks |
-| **429 Too Many Requests** | HTTP status code returned when a client exceeds the rate limit |
-| **Retry-After** | HTTP header telling the client how many seconds to wait before retrying |
-| **Fail-open** | If the rate limiter itself fails, allow requests through — prioritizes availability over protection |
-| **Fail-closed** | If the rate limiter itself fails, block requests — prioritizes protection over availability |
-| **Circuit breaker** | A pattern that stops calling a failing downstream service after too many errors, waits, then probes before resuming |
-| **Lua script (Redis)** | A script executed atomically within Redis — ensures multiple commands run as a single unit with no interleaving |
-
----
-
-## 9. Talking Points Checklist (for the actual interview)
-
-- [ ] Walk through at least 3 algorithms (fixed window, sliding window counter, token bucket) with trade-offs — don't just pick one
-- [ ] Explain the distributed problem: 50 API servers × local counters = no enforcement → centralized Redis counter
-- [ ] Show the Lua script for atomic INCR + EXPIRE and explain why atomicity matters (orphaned keys without TTL)
-- [ ] Mention the fail-open vs fail-closed decision and explain when you'd choose each
-- [ ] Cite the standard rate limit response headers (`X-RateLimit-Remaining`, `Retry-After`) — it shows you think about the client contract
-- [ ] Say "Stripe uses token bucket, Cloudflare uses approximate sliding window at edge" — grounds your answer in real production systems

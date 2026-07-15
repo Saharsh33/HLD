@@ -196,38 +196,3 @@ GET /v1/wallets/transactions?limit=20&cursor=tx_888999000111
 2. **Cryptographic hash chaining:** each transaction row stores a SHA-256 hash of its own data *plus* the previous row's hash (blockchain-style). Altering row #10 invalidates the hash of every row after it — a background scanner catches the broken chain instantly
 3. **WORM archival:** logs stream continuously to S3 Object Lock (compliance mode) — undeletable for the retention period, by anyone, including root
 4. **SIEM isolation:** every DB login and admin query ships to a security vault the database engineers themselves can't access
-
----
-
-## 7. Quick-Reference Glossary
-
-| Term | One-Line Plain-English Meaning |
-|---|---|
-| **CAP Theorem (CP choice)** | During a network partition, refuse writes rather than risk an inconsistent balance |
-| **ACID** | The four guarantees (atomic, consistent, isolated, durable) that make a transaction trustworthy |
-| **Idempotency key** | A unique ID per logical request so retrying it (e.g., a double-tap) never double-charges |
-| **SETNX** | "Set if Not Exists" — a Redis command that only succeeds for the *first* caller, rejecting all duplicates |
-| **Hot key / hot partition** | One database row/key getting so much traffic its single node can't keep up while others sit idle |
-| **Balance slotting** | Splitting one account's balance across many rows to spread write contention |
-| **Transactional Outbox** | Writing an event into the same DB transaction as the real change, so the two can never go out of sync |
-| **CDC (Change Data Capture)** | A background worker that reads a database's internal log and streams changes elsewhere without touching the main write path |
-| **WORM storage** | "Write Once, Read Many" — once written, *nobody* can edit or delete it until a retention timer expires |
-| **Hash chaining** | Each record embeds the previous record's hash, so tampering with one record breaks every record after it |
-
----
-
-## 8. Golden Interview Rules
-
-1. **Never use floats for money.** Binary floating point can't represent decimals exactly (`0.1 + 0.2 = 0.30000000000000004`), and those tiny errors compound into real accounting discrepancies at scale. Store money as **64-bit integers in the smallest currency unit** — $50.00 is stored as `5000` cents, not `50.00`.
-2. **Lead with CAP, don't blurt out a database name.** When asked "how would you store balances," open with *"this is a core ledger, so we prioritize Consistency over Availability — that means an ACID-compliant relational store, not a NoSQL cache."* That's the sentence that signals you reason from first principles.
-3. **State your trade-offs unprompted.** If asked about the downside of the Outbox pattern, say directly: *"it adds complexity, and it means the Cassandra ledger is eventually consistent — usually a few milliseconds behind — rather than synchronous."* Owning the trade-off, not hiding it, is what a senior engineer sounds like.
-
----
-
-## 9. Talking Points Checklist (for the actual interview)
-
-- [ ] Open with the CP-over-AP decision and justify it with a concrete "double-spend" scenario
-- [ ] Do the QPS/storage math out loud — the reasoning matters more than the exact number
-- [ ] Explain *why* each of the four storage systems earns its place, not just name them
-- [ ] Walk through at least one bottleneck (hot key, race condition, dual-write) with its fix, unprompted
-- [ ] Say "we store money as integer cents, never floats" at some point — it's a near-guaranteed follow-up question

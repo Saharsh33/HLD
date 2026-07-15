@@ -263,32 +263,4 @@ POST /v1/telemetry
 
 - **Personalized Artwork:** Netflix runs A/B tests on thumbnail images per user. For the movie *Stranger Things*, a horror fan might see a scary thumbnail while a drama fan sees a character-focused one. The system generates dozens of candidate thumbnails per title, then uses multi-armed bandit algorithms to converge on the best-performing image per user segment. Drop this as: *"Even the thumbnail you see is ML-optimized — Netflix serves different artwork to different users for the same title."*
 
----
 
-## 9. Quick-Reference Glossary
-
-| Term | One-Line Plain-English Meaning |
-|---|---|
-| **Open Connect** | Netflix's custom CDN — hardware boxes installed inside ISPs worldwide, serving 95%+ of all video traffic locally |
-| **HLS / DASH** | Streaming protocols that chop video into small HTTP-downloadable chunks with a manifest (playlist) file listing available qualities |
-| **Adaptive Bitrate (ABR)** | The video player automatically switches between quality levels based on current network speed — no manual "set quality" needed |
-| **Per-title encoding** | Analyzing each movie's scene complexity to allocate bitrate efficiently — saving bandwidth with no visible quality loss |
-| **DRM (Digital Rights Management)** | Encrypting video content so only authorized, paid devices can decrypt and play it |
-| **Widevine / FairPlay** | Google's and Apple's DRM systems — the device-level hardware that holds decryption keys in a secure enclave |
-| **Collaborative filtering** | "Users like you also watched…" — recommending content based on behavior patterns of similar users |
-| **Content-based filtering** | Recommending based on the content's own attributes (genre, cast, director) rather than other users' behavior |
-| **Cold start** | A new user with zero history — the recommendation engine has no signal to personalize with |
-| **Chaos Monkey** | Netflix's tool that randomly kills production servers to test that the system auto-recovers |
-| **Multi-armed bandit** | An algorithm that balances exploring new options (trying different thumbnails) with exploiting known winners (showing the best-performing one) |
-| **Pre-positioning** | Pushing predicted-popular content to CDN edge servers *before* users request it, based on regional forecasts |
-
----
-
-## 10. Talking Points Checklist (for the actual interview)
-
-- [ ] Open with "Netflix is a VOD system, not a live system — the engineering challenges are completely different from YouTube Live" and explain why
-- [ ] Explain Open Connect as the reason Netflix doesn't use a third-party CDN — and tie it to the 100 Tbps egress cost problem
-- [ ] Walk through the playback flow: API Gateway → DRM license → manifest URL → OCA → encrypted chunk delivery
-- [ ] Raise the recommendation cold-start problem yourself and explain the content-based → collaborative → hybrid progression
-- [ ] Mention per-title encoding optimization — "same quality at 30% less bandwidth" — this shows you understand cost optimization at scale
-- [ ] If asked about reliability, mention Chaos Monkey: *"Netflix tests failover by intentionally breaking production — if you haven't tested it, you don't have it"*

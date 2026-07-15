@@ -232,36 +232,4 @@ Why do we worry about a 50,000-user stampede if every user's personal home feed 
 2. **Why We Still Lock Unique Personal Home Feeds (Private Data):**
    * Even though 50,000 strangers aren't reading Alice's unique home feed, Alice's **own devices can cause a single-user mini-stampede**. If her cache expires while she has the app open on her phone and iPad, or if she rapidly scrolls down triggering multiple simultaneous AJAX pagination requests (`limit=20`, `limit=40`), an unlocked system will execute multiple duplicate Cassandra queries for the exact same data. Mutex locking ensures only one internal thread rebuilds her feed.
 
----
 
-## 7. Quick-Reference Glossary
-
-| Term | One-Line Meaning |
-|---|---|
-| **L4 Load Balancer** | Routes by IP/port only — fast, doesn't inspect content. The outer traffic cop. |
-| **L7 Load Balancer** | Reads the actual HTTP path/headers — smart routing + SSL termination. The receptionist. |
-| **Anycast DNS** | Same IP broadcast globally; routes users to their nearest data center. |
-| **CDN / Origin Pull** | Edge caching network; pulls from S3 ("origin") only on first request, then caches. |
-| **HTTP/2 Multiplexing** | Many files download over one connection instead of one-at-a-time. |
-| **Pre-signed URL** | Temporary permission slip letting clients upload straight to S3. |
-| **VPC** | Private internal cloud network — fast, free, secure data transfer between your own services. |
-| **Kafka / Event Bus** | Async messaging system that decouples services (post created → notify workers). |
-| **CAP Theorem (AP choice)** | Trade-off between Availability and Consistency during network failures; Instagram picks Availability. |
-| **Eventual Consistency** | Data syncs everywhere within seconds — not instantly, but reliably soon. |
-| **Cursor-Based Pagination** | "Give me rows after X" instead of "skip N rows" — stays fast at any scale (O(1) vs O(N)). |
-| **ACID** | Guarantee that a DB operation fully completes or doesn't happen at all. |
-| **LSM Tree** | Cassandra's write engine — appends sequentially instead of editing in place, making writes very fast. |
-| **Redis ZSET** | In-memory sorted list (by timestamp) enabling instant "give me the newest 20" queries. |
-| **Write Amplification** | One user action triggering a disproportionate number of hidden backend writes. |
-| **Thundering Herd (Write)** | Celebrity fan-out overwhelming the system — solved via hybrid push-pull. |
-| **Cache Stampede (Read)** | Many requests hitting the DB at once after a cache expires — solved via distributed locking. |
-| **Distributed Mutex (`SETNX`)** | A shared lock ensuring only one process rebuilds an expired cache at a time. |
-
----
-
-## 8. Interviewer Evaluation Rubric (What Earns a "Strong Hire")
-
-A candidate architecture is evaluated against three core engineering pillars:
-1. **Proactive Resource Decoupling:** The candidate explicitly isolates heavy binary workloads (media ingestion/serving via CDN/S3) from lightweight transactional workflows (JSON APIs/social graph), recognizing that combining them leads to resource starvation.
-2. **Deep Access-Pattern Alignment:** The candidate rejects "one-size-fits-all" databases. They explicitly match relational ACID needs to SQL, sequential append-only time-series data to wide-column NoSQL, and sub-100ms read timelines to in-memory sorted sets.
-3. **Scale-Induced Edge Case Mastery:** The candidate demonstrates that designs working for 10,000 users fail at 500 million users. Proactively identifying and engineering concrete solutions for **Thundering Herds** (via Hybrid Push-Pull) and **Cache Stampedes** (via Mutex Locking) separates junior candidates from principal architects.

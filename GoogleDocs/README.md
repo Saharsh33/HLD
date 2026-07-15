@@ -283,29 +283,4 @@ If both operations are applied naively, User A sees "XY" but User B sees "YX" �
 
 - **Notion — Hybrid approach:** Notion uses a block-based document model where each block (paragraph, heading, image) is an independent CRDT. This limits the blast radius of conflicts — two users editing different blocks never conflict at all, even without transformation.
 
----
 
-## 8. Quick-Reference Glossary
-
-| Term | One-Line Plain-English Meaning |
-|---|---|
-| **Operational Transformation (OT)** | An algorithm that adjusts concurrent edits so they produce the same result regardless of arrival order — requires a central server to sequence operations |
-| **CRDT (Conflict-free Replicated Data Type)** | A data structure where concurrent operations can be applied in any order and always converge to the same state — no central server needed |
-| **Operation log** | An append-only record of every edit ever made to a document — the document is a materialized view of this log |
-| **Snapshot** | A periodic full "photo" of the document state, so you don't have to replay the entire operation log from the beginning |
-| **Presence** | Real-time awareness of who else is in the document — live cursors, colored selections, "User X is editing" labels |
-| **Strong eventual consistency** | A guarantee that all replicas that have received the same set of operations will show the *identical* state — regardless of the order they received them |
-| **Sequencer** | The central server component (in OT) that assigns a canonical order to concurrent operations |
-| **Fractional indexing** | Assigning positions between existing items (e.g., position 1.5 between 1 and 2) so insertions never shift existing positions — used in CRDTs |
-| **Commutativity** | A mathematical property where operations can be applied in any order and produce the same result — the key property that makes CRDTs work |
-
----
-
-## 9. Talking Points Checklist (for the actual interview)
-
-- [ ] Open with "this is a distributed state synchronization problem, not a messaging problem — every keystroke mutates a shared document, and all clients must converge"
-- [ ] Explain OT vs CRDTs at a high level — mention Google uses OT (Jupiter), Figma uses CRDTs, and explain the trade-off (central server vs mathematical convergence)
-- [ ] Walk through the editing flow: client generates operation → WebSocket → Collaboration Service transforms it → persists to Cassandra → Redis Pub/Sub fans out to all clients
-- [ ] Raise the "hot document" fan-out problem yourself and explain the Redis Pub/Sub per-document channel solution
-- [ ] Explain snapshots + operation log for version history — "periodic photos so you don't replay the whole tape"
-- [ ] If asked about offline support, explain operation buffering + server reconciliation and mention that CRDTs handle this more naturally than OT

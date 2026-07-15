@@ -243,35 +243,3 @@ We make the ingestion tier completely stateless and resilient to hardware failur
 2. **500ms Auto-Reconnect via Standby Nodes:** If Ingestion Server A dies, the creator's streaming software (OBS) automatically attempts a TCP reconnect within 500ms. BGP routing immediately directs the connection to standby Ingestion Server B in the same data center.
 3. **Stateless Session Recovery via Redis:** Active stream keys and session metadata are stored in an in-memory Redis cluster with a 60-second Time-To-Live (TTL). When Server B receives the reconnected stream, it queries Redis, verifies the `stream_key` is valid and active, and seamlessly stitches the new video chunks into the existing CDN delivery pipeline. Viewers experience at most a 1-second stutter instead of a broken broadcast!
    > **Stateless Session Failover in plain English:** Storing stream connection states in fast RAM (Redis) instead of inside the video server itself. This way, if Video Server A dies, Backup Server B can look at RAM, see who was streaming, and instantly take over the live feed without disconnecting the viewers.
-
----
-
-## 7. Quick-Reference Glossary
-
-| Term | One-Line Plain-English Meaning |
-|---|---|
-| **Adaptive Bitrate (ABR)** | Chunks live video into multiple quality sizes (1080p to 360p) on the fly so slow Wi-Fi doesn't cause buffering. |
-| **RTMP Ingestion** | A continuous, low-overhead communication pipe used by creators to send raw live video from their PC to our servers. |
-| **LL-HLS (Low-Latency HLS)** | Chops live video into tiny 1-second HTTP files so global CDN networks can cache and deliver them to millions. |
-| **WebSockets (`wss://`)** | A persistent, bi-directional TCP connection with tiny header overhead (~2 bytes), mandatory for instant live chat. |
-| **CAP Theorem (AP Choice)** | Choosing platform uptime and uninterrupted streaming over exact millisecond data consistency during network faults. |
-| **Eventual Consistency** | Data (like viewer counts) syncs across all servers worldwide within a few seconds instead of instantly locking the database. |
-| **Redis Pub/Sub** | An ultra-fast in-memory message router that broadcasts chat messages to thousands of servers instantly without touching hard drives. |
-| **Thundering Herd** | When millions of users simultaneously join a single stream or hit a server at the exact same second, causing system overload. |
-| **Tiered (Hierarchical) Pub/Sub** | Grouping servers into clusters so central message brokers only push once per server group rather than to millions of individual users. |
-| **Chat Sampling** | Algorithmically showing only a randomized percentage of chat messages during massive traffic spikes to prevent browser crashes. |
-| **NoSQL Hot-Partition** | When too much data sharing the exact same DB key overloads a single physical computer while other machines sit empty. |
-| **Key Sharding / Salting** | Adding a random number or timestamp to a database key so writes are forced to spread evenly across many physical computers. |
-| **Anycast BGP Routing** | Sharing a single global IP address across many servers worldwide so users are automatically connected to the closest healthy machine. |
-| **Stateless Session Failover** | Storing stream connection states in fast RAM (Redis) so if a video server dies, a backup server can instantly take over the live feed. |
-| **Argos VCU** | Custom hardware chips designed by Google specifically to encode live video 20-33x more efficiently than normal computer CPUs. |
-| **QUIC (HTTP/3)** | A modern network protocol over UDP that prevents video stuttering when a user's Wi-Fi drops a data packet. |
-
----
-
-## 8. Interviewer Evaluation Rubric (What Earns a "Strong Hire")
-
-A candidate architecture is evaluated against three core engineering pillars:
-1. **Protocol & Network Pragmatism:** The candidate explicitly distinguishes between live ingestion protocols (RTMP/QUIC), video delivery protocols (LL-HLS via CDN edge caching), and real-time bidirectional chat protocols (WebSockets). They understand why WebSockets cannot be used for mass video delivery due to CDN caching limitations.
-2. **Access-Pattern Driven Storage Selection:** The candidate rejects one-size-fits-all databases. They explicitly match relational ACID needs for streamer profiles to SQL, high-velocity append-only chat logs to Wide-Column NoSQL, and sub-500ms chat broadcasting and viewer counts to In-Memory brokers (Redis Pub/Sub & Atomic Counters).
-3. **Scale-Induced Bottleneck Resolution:** The candidate demonstrates that designs working for a 500-viewer stream will collapse during a 1,000,000-viewer celebrity stream. Proactively identifying and engineering robust solutions for **Chat Fan-Out Explosions** (via Tiered Pub/Sub and Sampling) and **NoSQL Hot-Partitions** (via Key Salting and Kafka buffering) separates junior candidates from principal architects.

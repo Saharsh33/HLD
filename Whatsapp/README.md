@@ -198,13 +198,3 @@ These aren't required to answer the question, but dropping one shows you've actu
 - **Multi-device redesign (2021):** WhatsApp moved away from "phone = single source of truth" to a model where each linked device holds its own independent identity keys and syncs via the primary device — a nontrivial redesign of the original single-device Signal Protocol assumptions.
 
 If you mention any of these in an interview, tie it back to a *tradeoff* (e.g., "Erlang's actor model made sense for their connection-density problem, but it's a hiring/tooling cost most companies wouldn't take on just for that") rather than just naming it.
-
----
-
-## 10. Talking Points Checklist (for the actual interview)
-
-- [ ] State the AP-over-CP tradeoff explicitly and justify it with a concrete scenario
-- [ ] Do the back-of-envelope math out loud — interviewers care more about the reasoning than the exact number
-- [ ] Explain *why* each database was picked, not just which one
-- [ ] Pick at least one bottleneck (hot partition, thundering herd, ordering) and walk through the fix unprompted
-- [ ] If asked about privacy/security, be able to sketch X3DH + Double Ratchet at a high level without needing to write actual crypto

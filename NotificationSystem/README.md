@@ -269,31 +269,4 @@ PUT /v1/users/{user_id}/notification-preferences
 
 - **Twilio's rate limits:** Twilio imposes per-account SMS throughput limits (1 msg/sec by default per phone number, up to ~100/sec with toll-free or short codes). This is why you need the token bucket pattern — your internal throughput might be 58,000/sec, but Twilio can only absorb a fraction of that.
 
----
 
-## 8. Quick-Reference Glossary
-
-| Term | One-Line Plain-English Meaning |
-|---|---|
-| **APNs** | Apple Push Notification service — Apple's server that delivers push notifications to iPhones/iPads |
-| **FCM** | Firebase Cloud Messaging — Google's server that delivers push notifications to Android devices and web browsers |
-| **Idempotency key** | A unique ID per notification request so retries don't send the same notification twice |
-| **Dead Letter Queue (DLQ)** | A separate queue where permanently failed notifications are stored for manual investigation instead of being lost |
-| **Circuit breaker** | A pattern that stops calling a failing provider after too many errors, waits, then probes cautiously before resuming |
-| **Exponential backoff + jitter** | Retrying with increasing wait times (1s, 2s, 4s...) plus a random offset so retries from different workers don't all hit at the same instant |
-| **Token bucket** | A rate-limiting algorithm where a bucket fills with "tokens" at a fixed rate — each request consumes one token, and requests are blocked when the bucket is empty |
-| **Sliding window counter** | A rate-limiting pattern that counts events in a rolling time window (e.g., "last 60 minutes") rather than fixed clock-aligned intervals |
-| **Notification digest** | Batching multiple low-priority notifications into a single summary ("5 people liked your post") to reduce user annoyance |
-| **Device token** | A unique identifier assigned by APNs/FCM to a specific app installation on a specific device — used to route push notifications |
-| **Fallback escalation** | Automatically trying a different channel (e.g., SMS) when the primary channel (e.g., push) fails for critical notifications |
-
----
-
-## 9. Talking Points Checklist (for the actual interview)
-
-- [ ] Open with "this is the shared infrastructure behind every other system's 'send notification' step — it's a fan-out orchestration problem across unreliable third-party providers"
-- [ ] Explain priority-based Kafka topics and why critical alerts must not compete with marketing blasts
-- [ ] Walk through the worker pipeline: dedup (SETNX) → preferences → rate limit → template render → channel dispatch
-- [ ] Raise the third-party failure problem yourself: exponential backoff + jitter, circuit breaker, fallback escalation to SMS
-- [ ] Explain per-user rate limiting and notification aggregation: "5 people liked your post" instead of 5 separate pushes
-- [ ] Mention the at-least-once delivery guarantee and why exactly-once is impossible across external providers — dedup happens client-side
