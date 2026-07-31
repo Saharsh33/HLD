@@ -757,11 +757,11 @@ $$A = V \Lambda V^{-1}$$
 **Works for ANY matrix $A$ (m×n):**
 $$A = U \Sigma V^T$$
 
-| Component | Size | Meaning |
+| Component | Math Definition | Crisp Real-World Meaning (e.g., Netflix data) |
 |---|---|---|
-| $U$ | $m \times m$ | Left singular vectors (orthonormal) — row space info |
-| $\Sigma$ | $m \times n$ | Diagonal matrix of singular values $\sigma_i$ (≥ 0, sorted descending) |
-| $V^T$ | $n \times n$ | Right singular vectors (orthonormal) — column space info |
+| **$U$** | **Left Singular Vectors** ($m \times m$). Columns are orthogonal. | **The "Row Concepts" (e.g., User Profiles).** Maps your original rows (users) into underlying hidden patterns (like "Action fan" or "Comedy fan"). |
+| **$\Sigma$** | **Singular Values** ($m \times n$). Diagonal matrix, sorted largest to smallest. | **The "Importance Weights."** Tells you the strength of each hidden pattern. The top value is the most dominant pattern in your entire dataset. |
+| **$V^T$** | **Right Singular Vectors** ($n \times n$). Rows are orthogonal. | **The "Column Concepts" (e.g., Movie Profiles).** Maps your original columns (movies) into those exact same hidden patterns. |
 
 **Truncated SVD (Rank-$k$ Approximation):**
 $$A \approx U_k \Sigma_k V_k^T$$
