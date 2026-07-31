@@ -1324,6 +1324,26 @@ Note: MLE of variance is **biased** (divides by $n$, not $n-1$). Unbiased estima
 # TOPIC 14: NLP BASICS (TF-IDF, Embeddings, Transformers)
 # ═══════════════════════════════════════════════
 
+## 0. TEXT PREPROCESSING & TOKENIZATION
+
+Before any advanced modeling, text must be cleaned and broken down.
+
+**1. Basic Cleaning:**
+- **Lowercasing**: "Apple" and "apple" become the same.
+- **Stop word removal**: Removing common words like "the", "and", "is" (useful for TF-IDF, but **bad** for Transformers, which need full context).
+- **Stemming vs. Lemmatization**:
+  - *Stemming*: Crudely chops off word endings. "Running" → "Run". "Caring" → "Car". (Fast, but often produces non-words).
+  - *Lemmatization*: Uses a dictionary to find the root word. "Better" → "Good". "Running" → "Run". (Slower, but grammatically correct).
+
+**2. Tokenization:**
+How do we split a sentence into pieces (tokens)?
+- **Word Tokenization**: Split by spaces. *Problem*: Huge vocabulary size, and how do you handle new/made-up words (Out-of-Vocabulary or OOV)?
+- **Character Tokenization**: Split into letters. *Problem*: Too granular. A model has to learn that 'c', 'a', 't' means cat. Sequence lengths become huge.
+- **Subword Tokenization (BPE - Byte Pair Encoding):** *The modern standard (used in GPT, BERT).* It starts with characters and iteratively merges the most frequent pairs. 
+  - Common words remain whole: "happy" → ["happy"]
+  - Rare words are split: "unhappiness" → ["un", "happi", "ness"]
+  - *Advantage*: Handles OOV words perfectly and keeps the vocabulary size manageable (e.g., 50k tokens).
+
 ## 1. TEXT REPRESENTATION: FROM BAG-OF-WORDS TO TF-IDF
 
 Before a model can process text, it needs to be converted into numbers. 
@@ -1394,6 +1414,29 @@ What does "it" refer to? The animal or the street?
 **BERT vs GPT:**
 - **BERT (Encoder only):** Bidirectional. Reads the whole sentence at once. Trained by masking out words ("The [MASK] sat on the mat") and predicting them. Great for classification, NER, understanding.
 - **GPT (Decoder only):** Autoregressive. Reads left-to-right. Trained to predict the *next* word. Great for generation (ChatGPT).
+
+
+## 4. NLP EVALUATION METRICS
+
+How do we score models that generate text (like translation or summarization)? Accuracy doesn't work because there are many valid ways to write the same thing.
+
+- **BLEU (Bilingual Evaluation Understudy):** Used mostly for **Translation**. It measures *Precision*. How many of the n-grams (1-word, 2-word chunks) in the *generated* text actually appeared in the *reference* text?
+  - *Critique:* It penalizes you if you use a valid synonym that wasn't in the reference.
+- **ROUGE (Recall-Oriented Understudy for Gisting Evaluation):** Used mostly for **Summarization**. It measures *Recall*. How many of the n-grams in the *human reference* summary were captured by the *generated* summary?
+- **Perplexity:** Used for Language Models (like GPT). It measures how "surprised" the model is by a real test set. Lower perplexity = better model (it assigned high probability to the real text).
+
+## 5. MODERN LLM PARADIGMS
+
+When you have a base model (like GPT-4 or LLaMA) but need it to know about your company's private data, you have two choices:
+
+1. **Fine-Tuning:**
+   - *What:* Actually changing the model's internal weights by training it on your specific examples (Q&A pairs, instructions).
+   - *Best for:* Teaching the model a **new tone**, **format**, or **style** (e.g., teaching it to reply like a pirate, or output strict JSON).
+   - *Bad for:* Memorizing facts. It's expensive and models still hallucinate.
+
+2. **RAG (Retrieval-Augmented Generation):**
+   - *What:* You don't change the model. Instead, when a user asks a question, you search your private database (using vector embeddings) for the relevant document, paste that document into the prompt, and say: "Answer the question using ONLY this text."
+   - *Best for:* **Factual accuracy**, preventing hallucinations, and citing sources. It's much cheaper and you can update the database instantly without retraining the model.
 
 ---
 
