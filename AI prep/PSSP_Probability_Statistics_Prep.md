@@ -382,8 +382,17 @@ Are you measuring NUMBERS (like height, salary, time)?
 ```
 
 **Step 3: The Math (For Completeness)**
-Once you've chosen your tool, here are the underlying formulas that the computer calculates for you:
+Once you've chosen your tool, here are the underlying formulas that the computer calculates for you. But first, let's understand two crucial pieces of the math:
 
+**1. What does `df` mean? (Degrees of Freedom)**
+- **Intuition:** It's how many "free choices" your data has before the math locks it in. If you have 3 numbers that *must* average to 10, you can freely pick the first two (e.g., 5 and 15), but the third number *must* be 10. You had 2 free choices. So, `df = n - 1`. The smaller your `df`, the less certain the math is.
+
+**2. What do I do with the calculated test value (Z, t, F, χ²)?**
+- The test statistic is a **"weirdness score"**. It tells you how extreme your data is if the Null Hypothesis ($H_0$) is true. 
+- You use software to turn this score into a **p-value** (a percentage).
+- **Compare it to $\alpha$ (Alpha):** If your p-value is **less than 0.05 (5%)**, your data is so weird that $H_0$ must be wrong. You **Reject $H_0$** and conclude there is a real difference!
+
+**The Formulas:**
 **Z-test (known σ, large n):**
 $$Z = \frac{\bar{X} - \mu_0}{\sigma / \sqrt{n}}$$
 
@@ -439,13 +448,20 @@ Fail to Reject H₀ (NOT "accept H₀")
 ## 4. REAL-WORLD APPLICATIONS
 
 **A/B Testing (Frequently Asked):**
-- H₀: No difference between control (A) and treatment (B)
-- H₁: Treatment has a different conversion rate
-- **Pitfalls:**
-  - **Peeking**: Checking results before reaching required sample size inflates Type I error
-  - **Multiple Comparisons**: Testing 20 variants → expect 1 false positive at α=0.05 → use **Bonferroni correction** ($\alpha_{adj} = \alpha / m$)
-  - **Novelty Effect**: Users try new features just because they're new — wait for effect to stabilize
-  - **Simpson's Paradox**: Aggregate results can reverse when data is segmented
+**The Scenario:** You run a website. You want to know if changing the "Buy" button from Blue (Control/A) to Red (Treatment/B) will make more people buy things.
+- **$H_0$ (The "Boring" Null Hypothesis):** Color doesn't matter. Both buttons result in the exact same sales rate.
+- **$H_1$ (Alternative Hypothesis):** The Red button causes a different (or higher) sales rate.
+
+**Important Metric: Lift**
+- **What is it?** "Lift" is simply the percentage increase (or decrease) in the metric you care about, comparing the new version to the old version.
+- **Example:** If the Blue button (A) had a 2.0% conversion rate, and the Red button (B) had a 2.1% conversion rate. The **absolute difference** is 0.1%, but the **Lift** is `(2.1% - 2.0%) / 2.0% = 0.05 = 5%`. 
+- **The Catch:** You can have a 5% lift that is *statistically significant* (the math says it's real), but if your overall sales volume is tiny, a 5% lift might equal $10 extra dollars a month, which isn't *practically significant* enough to justify paying a developer to change the button.
+
+**Pitfalls of A/B Testing (Explained Simply):**
+- **Peeking (The "Are we there yet?" problem):** Stopping the test the second you see a "winner." (Like flipping a coin, getting heads 3 times in a row, and declaring it rigged). You *must* wait until you hit your pre-determined sample size, otherwise you inflate False Positives.
+- **Multiple Comparisons (The "Spaghetti at the wall" problem):** Testing 20 different colors at once. By pure 5% random chance, *one* of those colors will look like a massive winner even if it isn't. (Fix: Make it harder to win by lowering your $\alpha$ threshold, called the Bonferroni correction).
+- **Novelty Effect (The "Shiny New Toy" problem):** People click the new button just because it's different. Wait a few weeks for them to get used to it before measuring the real effect.
+- **Simpson's Paradox (The "Segment Illusion"):** Overall, the Red button wins. But if you look *only* at Mobile users, Blue wins. And if you look *only* at Desktop, Blue wins. How? Because the mix of users is heavily skewed. Always segment your data (Device, Country, etc.) to double-check the winner.
 
 ## 5. TOP INTERVIEW QUESTIONS
 
