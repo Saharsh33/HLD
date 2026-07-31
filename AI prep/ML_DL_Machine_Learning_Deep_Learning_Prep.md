@@ -34,7 +34,7 @@ y │         ●
 
 | # | Assumption | What It Means | What Happens When Violated | Fix |
 |---|---|---|---|---|
-| **L** | **Linearity** | $E[y|X] = X\beta$ (true relationship is linear) | Biased coefficients, poor predictions | Add polynomial/interaction terms, use non-linear models |
+| **L** | **Linearity** | $E[y \mid X] = X\beta$ (true relationship is linear) | Biased coefficients, poor predictions | Add polynomial/interaction terms, use non-linear models |
 | **I** | **Independence** | Residuals are uncorrelated: $\text{Cov}(e_i, e_j) = 0$ | Underestimated SE → inflated significance | Time-series: use ARIMA; Spatial: spatial regression |
 | **N** | **Normality** | Residuals $\sim N(0, \sigma^2)$ | Invalid CIs and p-values (coefficients still unbiased) | Transform Y, use robust SEs, large n (CLT helps) |
 | **E** | **Equal Variance (Homoscedasticity)** | $\text{Var}(e_i) = \sigma^2$ for all $i$ | Inefficient estimates, wrong SEs | WLS, log-transform Y, robust standard errors |
@@ -940,9 +940,9 @@ Think of it as telling the model: "I want you to minimize errors, BUT I'll also 
 
 | Type | Penalty | Effect on Weights | Geometry | Best For |
 |---|---|---|---|---|
-| **L1 (Lasso)** | $\lambda \sum |\beta_j|$ | Drives weights to **exactly 0** | Diamond constraint | **Feature selection** (sparse models) |
+| **L1 (Lasso)** | $\lambda \sum \vert \beta_j \vert$ | Drives weights to **exactly 0** | Diamond constraint | **Feature selection** (sparse models) |
 | **L2 (Ridge)** | $\lambda \sum \beta_j^2$ | Shrinks weights **toward 0** (never exactly 0) | Circle constraint | **Multicollinearity** handling |
-| **ElasticNet** | $\alpha\lambda\sum|\beta_j| + \frac{(1-\alpha)\lambda}{2}\sum\beta_j^2$ | Mix of both | Blend | Correlated features + sparsity |
+| **ElasticNet** | $\alpha\lambda\sum \vert \beta_j \vert + \frac{(1-\alpha)\lambda}{2}\sum\beta_j^2$ | Mix of both | Blend | Correlated features + sparsity |
 
 **Geometric Intuition:**
 ```
@@ -1109,7 +1109,7 @@ Not linearly separable!          Linearly separable in higher dim!
 |---|---|---|
 | Linear | $K(x,y) = x \cdot y$ | Linearly separable data |
 | Polynomial | $K(x,y) = (x \cdot y + c)^d$ | Moderate non-linearity |
-| **RBF (Gaussian)** | $K(x,y) = \exp(-\gamma\|x-y\|^2)$ | **Default**, most flexible |
+| **RBF (Gaussian)** | $K(x,y) = \exp(-\gamma \lVert x-y \rVert^2)$ | **Default**, most flexible |
 | Sigmoid | $K(x,y) = \tanh(\alpha x \cdot y + c)$ | Rarely used (not always valid) |
 
 **RBF parameter $\gamma$:**

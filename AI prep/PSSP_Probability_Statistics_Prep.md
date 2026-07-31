@@ -26,8 +26,8 @@ Probability measures how likely an event is to occur. Two schools of thought:
 | Concept | Definition | Interview Trap |
 |---|---|---|
 | **Independence** | $P(A \cap B) = P(A) \cdot P(B)$ | Independent ≠ Mutually Exclusive. If A,B are M.E. and both have P>0, they are **dependent** |
-| **Conditional Probability** | $P(A|B) = \frac{P(A \cap B)}{P(B)}$ | $P(A|B) \neq P(B|A)$ — this is the **prosecutor's fallacy** |
-| **Law of Total Probability** | $P(A) = \sum_i P(A|B_i) P(B_i)$ | Partition must be exhaustive & mutually exclusive |
+| **Conditional Probability** | $P(A \mid B) = \frac{P(A \cap B)}{P(B)}$ | $P(A \mid B) \neq P(B \mid A)$ — this is the **prosecutor's fallacy** |
+| **Law of Total Probability** | $P(A) = \sum_i P(A \mid B_i) P(B_i)$ | Partition must be exhaustive & mutually exclusive |
 | **Complement Rule** | $P(A') = 1 - P(A)$ | Use for "at least one" problems: $P(\geq 1) = 1 - P(\text{none})$ |
 
 ### Independent vs Mutually Exclusive — The #1 Confusion
@@ -637,9 +637,9 @@ $$\text{Posterior} = \frac{\text{Likelihood} \times \text{Prior}}{\text{Evidence
 | Term | Symbol | Meaning |
 |---|---|---|
 | **Prior** | $P(A)$ | Belief before seeing data |
-| **Likelihood** | $P(B|A)$ | How likely is this data given hypothesis A |
+| **Likelihood** | $P(B \mid A)$ | How likely is this data given hypothesis A |
 | **Evidence (Marginal)** | $P(B)$ | Total probability of data across all hypotheses |
-| **Posterior** | $P(A|B)$ | Updated belief after seeing data |
+| **Posterior** | $P(A \mid B)$ | Updated belief after seeing data |
 
 **Intuition:** Bayes' updates your belief. Strong prior + weak evidence → posterior ≈ prior. Weak prior + strong evidence → posterior ≈ likelihood.
 
@@ -820,7 +820,7 @@ X_lsa = svd.fit_transform(X_tfidf)  # Latent Semantic Analysis
 
 | Topic | Key Formula | #1 Interview Trap | Quick Fact |
 |---|---|---|---|
-| Probability | $P(A|B) = P(A∩B)/P(B)$ | Independent ≠ Mutually Exclusive | Use complement for "at least one" |
+| Probability | $P(A \mid B) = P(A∩B)/P(B)$ | Independent ≠ Mutually Exclusive | Use complement for "at least one" |
 | Distributions | Normal: 68-95-99.7 | Skewness: +ve → Mean > Median | Binomial → Poisson when n→∞, p→0 |
 | Sampling | $SE = \sigma/\sqrt{n}$ | Stratified: sample FROM each. Cluster: sample ENTIRE clusters | 4× sample size → halves SE |
 | Correlation | Pearson measures LINEAR only | r=0 doesn't mean no relationship | Spearman for ordinal/outliers |
