@@ -1324,90 +1324,76 @@ Note: MLE of variance is **biased** (divides by $n$, not $n-1$). Unbiased estima
 # TOPIC 14: NLP BASICS (TF-IDF, Embeddings, Transformers)
 # ═══════════════════════════════════════════════
 
-## 1. TF-IDF
+## 1. TEXT REPRESENTATION: FROM BAG-OF-WORDS TO TF-IDF
 
-**TF-IDF = Term Frequency × Inverse Document Frequency**
+Before a model can process text, it needs to be converted into numbers. 
 
-$$\text{TF-IDF}(t,d) = \text{TF}(t,d) \times \log\frac{N}{\text{DF}(t)}$$
-- $\text{TF}(t,d)$ = frequency of term $t$ in document $d$
-- $\text{DF}(t)$ = number of documents containing term $t$
-- $N$ = total number of documents
+**Bag-of-Words (BoW):**
+The simplest approach. You create a vocabulary of all unique words. Each document is a vector counting how many times each word appears.
+- *Problem:* "The" might appear 100 times, but it carries no meaning. Rare words like "quantum" might appear once but define the document's topic. BoW treats all counts equally.
 
-**Intuition:** Words that appear frequently in one document but rarely across all documents are important. Common words (the, is, a) get low TF-IDF.
+**TF-IDF (Term Frequency - Inverse Document Frequency)**
+TF-IDF fixes the BoW problem by balancing two competing metrics:
 
-```python
-from sklearn.feature_extraction.text import TfidfVectorizer
+1. **TF (Term Frequency):** How often does the word appear in *this specific* document? (Local importance)
+   $\text{TF} = \frac{\text{count of word in doc}}{\text{total words in doc}}$
+2. **IDF (Inverse Document Frequency):** How rare is the word across *all* documents? (Global rarity)
+   $\text{IDF} = \log\left(\frac{\text{total number of documents}}{\text{documents containing the word}}\right)$
 
-tfidf = TfidfVectorizer(max_features=5000, stop_words='english')
-X_tfidf = tfidf.fit_transform(documents)  # sparse matrix
-```
+$$\text{TF-IDF} = \text{TF} \times \text{IDF}$$
 
-## 2. WORD EMBEDDINGS
+**Intuition Example:**
+Imagine an article about astronomy in a corpus of 1000 random articles.
+- "The" appears frequently (High TF), but it's in all 1000 documents (IDF = $\log(1000/1000) = 0$). TF-IDF = 0.
+- "Galaxy" appears frequently in this article (High TF) and is rare globally (e.g., in only 5 docs, IDF = $\log(1000/5) \approx 5.3$). TF-IDF is High!
+TF-IDF automatically highlights the words that make a document unique.
 
-| Method | Type | Key Idea | Limitation |
-|---|---|---|---|
-| **Word2Vec** | Static | Skip-gram (predict context from word) or CBOW (predict word from context) | One vector per word (no polysemy) |
-| **FastText** | Static | Subword n-grams → handles OOV words | Still static |
-| **GloVe** | Static | Global co-occurrence matrix factorization | Static |
-| **BERT** | **Contextual** | Bidirectional transformer, masked language model | Slow inference |
-| **GPT** | **Contextual** | Autoregressive (left-to-right) | Unidirectional |
+## 2. WORD EMBEDDINGS (Dense Vectors)
 
-**Word2Vec — Skip-gram:**
-```
-Input: "The cat sat on the mat"
-Window = 2
+TF-IDF produces sparse vectors (mostly zeros) where the size equals the vocabulary size (e.g., 50,000 dimensions). More importantly, it has **no semantic understanding**. The distance between "king" and "queen" is the same as "king" and "apple".
 
-Center: "sat"  →  Predict: ["The", "cat", "on", "the"]
-                            (context words)
+**Word Embeddings (e.g., Word2Vec)** map words to dense, low-dimensional vectors (e.g., 300 dimensions). 
+The core philosophy (Distributional Hypothesis): *"You shall know a word by the company it keeps."*
 
-Training: Neural network with 1 hidden layer
-          Hidden layer weights = word embeddings!
-```
+**Word2Vec (Skip-gram model) Intuition:**
+Imagine a sliding window moving across text.
+Sentence: "The cute dog barked loudly"
+Center word: "dog". Context words: ["The", "cute", "barked", "loudly"]
 
-**Why Embeddings > One-Hot?**
-- One-hot: $V$-dimensional sparse vector, no semantic meaning
-- Embeddings: $d$-dimensional dense vector ($d \ll V$), captures semantics
-- Famous: `king - man + woman ≈ queen`
+We train a shallow neural network on a fake task: "Given the center word 'dog', predict the context words."
+To get good at this, the network must learn that "dog" and "cat" often share the same context ("cute", "barked", "meowed"). 
+Once training is done, we throw away the prediction part. The **internal weights** of the network become our Word Embeddings! Because "dog" and "cat" had to predict similar context words, their resulting vectors end up very close in the 300-D space.
 
-## 3. TRANSFORMER ARCHITECTURE (High-Level)
+*Famous property:* Semantic math works! $\vec{\text{King}} - \vec{\text{Man}} + \vec{\text{Woman}} \approx \vec{\text{Queen}}$
 
-```
-Input: "The cat sat on"
-         │
-   [Token Embeddings + Positional Encoding]
-         │
-   ┌─────┴─────┐
-   │  Self-     │
-   │  Attention │  ← "Which words should I focus on?"
-   │  (Q, K, V) │
-   └─────┬─────┘
-         │
-   [Feed-Forward NN]
-         │
-   [Layer Norm + Residual]
-         │
-    (repeat × N layers)
-         │
-   [Output]
-```
+## 3. THE TRANSFORMER ARCHITECTURE & SELF-ATTENTION
 
-**Self-Attention:**
-$$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right) V$$
-- $Q$ = Query, $K$ = Key, $V$ = Value (all linear projections of input)
-- $\sqrt{d_k}$ = scaling factor to prevent softmax saturation
-- Each word "attends" to all other words → captures long-range dependencies
+Word2Vec is static: the vector for "bank" (river) and "bank" (money) is exactly the same.
+**Transformers (like BERT and GPT)** solved this by creating *contextual* embeddings. "Bank" gets a different vector depending on the surrounding words.
+
+### The Magic of Self-Attention
+Self-attention asks: "When processing a specific word, how much focus (attention) should I pay to every other word in the sentence?"
+
+**The Query, Key, Value (Q, K, V) Analogy:**
+Think of retrieving information from a database or a library.
+- **Query (Q):** What I'm looking for (e.g., "Subject of this verb").
+- **Key (K):** What each word offers (e.g., "I am a noun").
+- **Value (V):** The actual meaning/content of the word.
+
+For the sentence: *"The animal didn't cross the street because it was too tired."*
+What does "it" refer to? The animal or the street?
+- The word "it" produces a **Query**.
+- "animal" and "street" produce **Keys**.
+- The model computes the dot product of the Query of "it" with all Keys. The Query for "it" will match highly with the Key for "animal" (because of "tired").
+- We then take a weighted sum of the **Values** of all words, heavily weighted toward "animal". The new contextual embedding for "it" now contains the meaning of "animal"!
+
+### Key Transformer Components
+1. **Multi-Head Attention:** Instead of doing self-attention once, we do it multiple times in parallel (heads). One head might focus on grammar (subject-verb), another on adjectives, etc.
+2. **Positional Encoding:** Transformers process all words simultaneously (unlike RNNs). They have no sense of word order. We must inject a positional signal (usually sine/cosine waves) into the word embeddings so the model knows "A dog bit John" is different from "John bit a dog".
 
 **BERT vs GPT:**
-- **BERT**: Bidirectional (sees left + right context). Good for classification, NER, QA.
-- **GPT**: Autoregressive (sees only left context). Good for text generation.
-
-## 4. TOP INTERVIEW QUESTIONS
-
-**Q1:** _TF-IDF vs Word2Vec — when to use which?_
-> TF-IDF: Simple bag-of-words representation, good for search/ranking, interpretable. Word2Vec: Dense semantic representations, captures similarity, better for downstream ML tasks.
-
-**Q2:** _Why does BERT outperform Word2Vec?_
-> BERT produces **contextual** embeddings — "bank" gets different vectors in "river bank" vs "bank account". Word2Vec gives ONE vector per word regardless of context.
+- **BERT (Encoder only):** Bidirectional. Reads the whole sentence at once. Trained by masking out words ("The [MASK] sat on the mat") and predicting them. Great for classification, NER, understanding.
+- **GPT (Decoder only):** Autoregressive. Reads left-to-right. Trained to predict the *next* word. Great for generation (ChatGPT).
 
 ---
 
@@ -1417,75 +1403,70 @@ $$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)
 
 ## 1. CNN (Convolutional Neural Network)
 
-**Use Case:** Image data (spatial patterns)
+**Core Use Case:** Images, spatial data.
+Before CNNs, we fed images into standard neural networks by flattening them into a 1D line of pixels. This destroyed spatial relationships (pixels next to each other were now far apart).
 
-```
-Input Image → [Conv + ReLU] → [Pooling] → [Conv + ReLU] → [Pooling] → [Flatten] → [FC] → Output
-   (3D)       Extract features  Downsample  More features  Downsample   (1D)        Class
-```
+CNNs preserve the 2D grid using **Convolutions**.
 
-**Key Concepts:**
-- **Convolution**: Slide a filter (kernel) over image → detect edges, textures, patterns
-- **Pooling (Max/Avg)**: Reduce spatial dimensions → translation invariance + less computation
-- **Parameter Sharing**: Same filter applied everywhere → far fewer parameters than fully connected
+**The Convolution Operation:**
+Imagine a small 3x3 grid (a **filter** or **kernel**) sliding across the image like a magnifying glass. 
+At each step, it multiplies its own numbers by the pixel values underneath it and sums them up.
+- Early layers have filters that act as edge detectors (vertical edges, horizontal edges).
+- Deeper layers combine these edges to detect shapes (circles, corners).
+- Even deeper layers detect complex objects (faces, cars).
 
-## 2. RNN & LSTM
+**Why CNNs are brilliant:**
+1. **Parameter Sharing:** A filter that learns to detect a cat ear in the top-left corner uses the *exact same weights* to detect a cat ear in the bottom-right corner. This drastically reduces the number of parameters compared to standard networks.
+2. **Translation Invariance:** A cat is recognized as a cat no matter where it is in the image.
 
-**RNN:** Processes sequential data (text, time series) by maintaining a hidden state.
+**Pooling (Max Pooling):**
+Periodically, we downsample the image (e.g., taking the maximum value in every 2x2 patch). This reduces computation and makes the network even more robust to slight shifts and distortions in the image.
 
-```
-x₁ → [h₁] → x₂ → [h₂] → x₃ → [h₃] → output
-        │              │              │
-     hidden state flows through time
-```
+## 2. RNN & LSTM (Recurrent Neural Networks)
 
-**Problem:** Vanishing/exploding gradients over long sequences.
+**Core Use Case:** Sequential data (Text, Time Series, Audio), where order matters and length is variable.
 
-**LSTM (Long Short-Term Memory):**
-```
-            ┌──────────────────┐
-Forget Gate │ fₜ = σ(Wf·[hₜ₋₁,xₜ])  │  "What to forget from cell state"
-Input Gate  │ iₜ = σ(Wi·[hₜ₋₁,xₜ])  │  "What new info to store"
-Output Gate │ oₜ = σ(Wo·[hₜ₋₁,xₜ])  │  "What to output"
-Cell State  │ Cₜ = fₜ⊙Cₜ₋₁ + iₜ⊙C̃ₜ │  "Long-term memory"
-            └──────────────────┘
-```
+**The Vanilla RNN:**
+Standard networks have no memory. An RNN has a loop: it processes step 1, produces an output, and passes a **Hidden State** (memory) to step 2. 
+At step 2, it looks at the new input AND the memory from step 1.
+*Flaw:* **The Vanishing Gradient Problem.** In a long sentence, the gradient (learning signal) gets multiplied by a small number over and over as it travels back through time. By the time it reaches the beginning of the sentence, it's virtually zero. The RNN forgets early words.
 
-**LSTM solves vanishing gradient** because the cell state acts as a "highway" — gradients can flow unchanged through the forget gate.
+**LSTM (Long Short-Term Memory) to the rescue:**
+LSTMs fix the memory problem by introducing a "Cell State" — a conveyor belt running straight through the entire sequence. Information can flow down this belt easily.
+It uses **Gates** (small neural networks outputting values between 0 and 1) to control what enters and leaves the belt:
+1. **Forget Gate:** Decides what old information to throw away. (e.g., "The subject was singular, but I just saw a period. Forget the singular subject.")
+2. **Input Gate:** Decides what new information to add to the belt.
+3. **Output Gate:** Decides what part of the memory to output for this specific time step.
+LSTMs were the king of NLP before Transformers took over.
 
 ## 3. GANs (Generative Adversarial Networks)
 
-```
-[Random Noise z] → [Generator G] → [Fake Image]
-                                         │
-                        [Discriminator D] ← [Real Image]
-                              │
-                      [Real or Fake?]
+**Core Use Case:** Generating highly realistic new data (faces, art, deepfakes).
 
-G tries to fool D. D tries to catch G.
-They compete → both improve → G generates realistic data.
-```
+GANs are a fascinating setup where two neural networks fight against each other in a zero-sum game.
 
-**Objective (Minimax Game):**
-$$\min_G \max_D \; E[\log D(x)] + E[\log(1 - D(G(z)))]$$
+1. **The Generator (The Forger):** Starts with completely random noise and tries to transform it into a realistic image (e.g., a human face).
+2. **The Discriminator (The Detective):** Looks at images and tries to classify them as "Real" (from the actual training data) or "Fake" (created by the Generator).
 
-**Training Challenges:**
-- **Mode collapse**: G produces limited variety
-- **Training instability**: Hard to balance G and D
-- **Evaluation**: No single metric (FID, IS)
+**The Training Loop:**
+- The Generator creates a batch of fake images.
+- The Discriminator is trained on a mix of real and fake images to tell them apart.
+- Then, we train the Generator. Its goal is to maximize the Discriminator's mistake rate. It learns: "When I changed these pixels, the Discriminator thought it was real!"
+- Over time, the Discriminator gets better at spotting fakes, which forces the Generator to produce even more photorealistic images to fool it.
+
+*Challenges:* They are notoriously hard to train. If the Discriminator gets too good too fast, the Generator gets no useful feedback. If the Generator finds one specific image that always fools the Discriminator, it will only generate that one image (**Mode Collapse**).
 
 ## 4. TOP INTERVIEW QUESTIONS
 
-**Q1:** _CNN vs. RNN — when to use which?_
-> **CNN**: Spatial data (images, maybe 1D for text classification). **RNN/LSTM**: Sequential/temporal data (text generation, time series, speech). Modern: **Transformers** often outperform both for NLP and increasingly for vision (ViT).
+**Q1:** *CNN vs. RNN vs. Transformer — when to use which?*
+> **CNN**: Spatial data (images). **RNN/LSTM**: Temporal/Sequential data where order matters (time series). **Transformers**: Modern NLP and increasingly vision. They replace RNNs because they can process whole sequences in parallel (no unrolling through time) and handle long-range dependencies perfectly via self-attention.
 
-**Q2:** _Why are Transformers replacing RNNs?_
-> RNNs process sequentially (slow, can't parallelize). Transformers use self-attention (process all positions in parallel). Also, self-attention captures long-range dependencies better than RNN/LSTM (no vanishing gradient over sequence length).
+**Q2:** *Why do we need Positional Encoding in Transformers but not RNNs?*
+> RNNs inherently understand sequence because they process data one step at a time (t=1, t=2...). Transformers process the entire sequence simultaneously in parallel. Without positional encoding added to the embeddings, a Transformer would treat a sentence as an unordered bag of words.
 
-**Q3:** _How does dropout work as regularization in deep learning?_
-> During training, randomly set a fraction $p$ of neurons to 0. Forces network to learn redundant representations (no neuron is essential). At test time, scale weights by $(1-p)$ or use inverted dropout. Prevents co-adaptation of neurons.
+**Q3:** *What is the purpose of Pooling in a CNN?*
+> Pooling (like Max Pooling) reduces the spatial dimensions (width and height) of the representation. This reduces the number of parameters and computation in the network. More importantly, it provides spatial translation invariance—the exact location of a feature (like an edge) becomes less important than its rough relative location.
 
----
 
 # ═══════════════════════════════════════════════
 # TOPIC 16: DENSITY ESTIMATION (KDE, K-Means)
