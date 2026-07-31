@@ -55,30 +55,19 @@ Residuals vs Fitted:             Residuals vs Fitted:
    Constant spread                 Fan/Cone shape = BAD
 ```
 
-## 2. MATHEMATICS THAT MATTERS
+## 2. HOW IT LEARNS & METRICS (Simplified)
 
-**Cost Function (OLS):**
-$$J(\beta) = \sum_{i=1}^{n}(y_i - \hat{y}_i)^2 = \|y - X\beta\|^2$$
+**The Math (Keep it simple):**
+- **Objective:** Minimize **Mean Squared Error (MSE)**.
+- **Closed-form Solution:** $\hat{\beta} = (X^TX)^{-1}X^Ty$. 
+  *Interview tip:* This requires $X^TX$ to be invertible. Perfect multicollinearity breaks this (matrix becomes singular).
 
-**Closed-Form Solution:**
-$$\hat{\beta} = (X^TX)^{-1}X^Ty$$
-- $X$ = design matrix ($n \times (p+1)$ including intercept column)
-- $y$ = target vector ($n \times 1$)
-- Requires $X^TX$ to be **invertible** (fails with multicollinearity)
-
-**Gradient (for gradient descent):**
-$$\nabla_\beta J = -2X^T(y - X\beta)$$
-
-**R² (Coefficient of Determination):**
-$$R^2 = 1 - \frac{SS_{\text{res}}}{SS_{\text{tot}}} = 1 - \frac{\sum(y_i - \hat{y}_i)^2}{\sum(y_i - \bar{y})^2}$$
-- $R^2 = 1$ → perfect fit. $R^2 = 0$ → model predicts no better than the mean.
-- **Adjusted R²** penalizes additional features: $R^2_{\text{adj}} = 1 - (1-R^2)\frac{n-1}{n-p-1}$
-- **Trap:** R² ALWAYS increases when adding features → use Adjusted R² for model comparison.
-
-**Key Metric Relationships:**
-- $\text{MSE} = \frac{1}{n}\sum(y_i - \hat{y}_i)^2$
-- $\text{RMSE} = \sqrt{\text{MSE}}$ (same units as $y$)
-- $\text{MAE} = \frac{1}{n}\sum|y_i - \hat{y}_i|$ (robust to outliers, not differentiable at 0)
+**Evaluation Metrics:**
+- **R²:** How much variance in $Y$ is explained by $X$. (Closer to 1 is better).
+- **Adjusted R²:** **Always mention this.** R² artificially increases when you add junk features. Adjusted R² penalizes useless features. Always use it to compare models.
+- **MSE vs MAE:** 
+  - MSE squares errors (heavily punishes large outliers).
+  - MAE uses absolute errors (robust to outliers). Use MAE if your dataset has extreme outliers you don't want to over-correct for.
 
 ## 3. ALGORITHM WORKFLOW & TRADE-OFFS
 
@@ -209,38 +198,20 @@ P(y=1)
      └──────────────────────────── z (log-odds)
 ```
 
-**Log-Odds (Logit) Interpretation — Step by Step:**
+**Interpreting the Output (Log-Odds):**
+Linear models need an output that ranges from $(-\infty, +\infty)$. Probabilities are stuck between [0, 1]. Logistic regression solves this by predicting **Log-Odds**.
+- **Odds:** $P / (1-P)$. (e.g., if P = 0.75, Odds = 0.75/0.25 = 3).
+- **Log-Odds:** $\ln(\text{Odds})$.
 
-Before we get to log-odds, let's build up from the basics:
+*Coefficient meaning:* If $\beta_1 = 0.5$, a 1-unit increase in $X$ increases the *log-odds* by 0.5. To get the actual odds multiplier, exponentiate it: $e^{0.5} \approx 1.65$ (the odds increase by 65%).
 
-**1. Probability** = P(event happens). Range: [0, 1]. Example: P(rain) = 0.75 (75% chance of rain).
+## 2. THE LOSS FUNCTION (Why not MSE?)
 
-**2. Odds** = P(event) / P(not event). Range: [0, ∞). 
-- P = 0.75 → Odds = 0.75/0.25 = **3:1** ("3 to 1 in favor of rain")
-- P = 0.50 → Odds = 0.50/0.50 = **1:1** ("even odds")
-- P = 0.20 → Odds = 0.20/0.80 = **0.25:1** ("1 to 4 against")
-- Odds > 1 means event is more likely than not. Odds < 1 means less likely.
+**Log Loss (Binary Cross-Entropy):**
+Logistic regression uses Log Loss instead of MSE. 
 
-**3. Log-Odds (Logit)** = $\ln(\text{Odds})$. Range: $(-\infty, +\infty)$.
-- This is what logistic regression ACTUALLY models — a linear equation in log-odds space.
-- It maps the bounded [0,1] probability to an unbounded (-∞, +∞) scale, which is what linear models need.
-
-$$\ln\left(\frac{P(y=1)}{P(y=0)}\right) = \beta_0 + \beta_1 x_1 + \ldots$$
-
-**Interpreting $\beta$ coefficients:**
-- $\beta_1$ = change in **log-odds** for 1-unit increase in $x_1$ (holding others constant)
-- $e^{\beta_1}$ = **odds ratio** — multiplicative change in odds
-- Example: $\beta_1 = 0.7 \Rightarrow e^{0.7} \approx 2.01$ → the **odds** of the event double for each unit increase in $x_1$
-- Note: This is NOT a doubling of probability! If P goes from 0.10 to 0.18, odds went from 0.11 to 0.22 (doubled), but probability didn't double.
-
-## 2. MATHEMATICS THAT MATTERS
-
-**Loss Function (Binary Cross-Entropy / Log Loss):**
-$$J(\beta) = -\frac{1}{n}\sum_{i=1}^{n}\left[y_i \log(\hat{p}_i) + (1-y_i)\log(1-\hat{p}_i)\right]$$
-
-Where $\hat{p}_i = \sigma(X_i^T \beta)$.
-
-**Why Not MSE?** MSE with sigmoid creates a **non-convex** loss surface → gradient descent gets stuck in local minima. Log loss is **convex** → guaranteed global minimum.
+**Why? (Top Interview Question)** 
+If you use MSE with a Sigmoid curve, the math creates a "wavy" (**non-convex**) loss surface. Gradient descent will get trapped in local minima. Log Loss creates a smooth, bowl-shaped (**convex**) surface, guaranteeing the model finds the global minimum.
 
 ```
 MSE with Sigmoid:              Log Loss (Cross-Entropy):
@@ -251,15 +222,7 @@ MSE with Sigmoid:              Log Loss (Cross-Entropy):
 Non-convex (local minima)       Convex (single global minimum) ✅
 ```
 
-**Gradient:**
-$$\nabla_\beta J = \frac{1}{n} X^T(\hat{p} - y)$$
-- Same form as linear regression gradient! (beautiful mathematical coincidence)
-- No closed-form solution → must use gradient descent or Newton's method (IRLS)
-
-**Multiclass Extension:**
-- **One-vs-Rest (OvR)**: Train $K$ binary classifiers
-- **Softmax Regression**: Generalized logistic for $K$ classes:
-$$P(y=k|x) = \frac{e^{z_k}}{\sum_{j=1}^{K} e^{z_j}}$$
+*Note:* There is no closed-form solution for Logistic Regression. It must be solved using Gradient Descent (or similar solvers like L-BFGS).
 
 ## 3. ALGORITHM WORKFLOW & TRADE-OFFS
 
@@ -380,46 +343,17 @@ for feat, coef in zip(feature_names, model.coef_[0]):
 
 **What It Does:** Recursively splits data into subsets using feature thresholds to create a tree of if-else decisions. Think of it as playing a game of "20 questions" with your data.
 
-**Splitting Criteria — What Do These Numbers Mean?**
+**How it chooses a split (The Math Simplified):**
+The tree looks at all possible features and thresholds to find the split that makes the resulting child nodes as **pure** as possible.
 
-| Task | Criterion | Formula | Intuition |
-|---|---|---|---|
-| Classification | **Gini Impurity** | $G = 1 - \sum p_k^2$ | How "impure" is this node? |
-| Classification | **Entropy** | $H = -\sum p_k \log_2 p_k$ | How much uncertainty/surprise is in this node? |
-| Regression | **MSE / Variance** | $\frac{1}{n}\sum(y_i - \bar{y})^2$ | How spread out are the target values? |
+- **For Classification:** It uses **Gini Impurity** or **Entropy**.
+  *Intuition:* A node with 50 cats and 50 dogs is highly impure. A node with 100 cats and 0 dogs is perfectly pure. The tree greedily picks the split that drops the impurity the most (this drop is called **Information Gain**).
+- **For Regression:** It uses **MSE** (Mean Squared Error) to group similar continuous values together.
 
-**Gini Impurity — Intuition with Example:**
-Imagine you randomly pick a sample from the node and randomly assign it a label based on the class distribution. Gini = probability of **misclassifying** it.
-- Node with [50 cats, 50 dogs]: $G = 1 - (0.5^2 + 0.5^2) = 0.5$ → maximum impurity (coin flip!)
-- Node with [90 cats, 10 dogs]: $G = 1 - (0.9^2 + 0.1^2) = 0.18$ → mostly cats, fairly pure
-- Node with [100 cats, 0 dogs]: $G = 1 - (1.0^2 + 0^2) = 0$ → perfectly pure ✅
-
-A **good split** creates child nodes with **lower** Gini than the parent.
-
-**Information Gain (IG)** = how much does a split reduce uncertainty?
-$$IG = H(\text{parent}) - \sum \frac{n_j}{n} H(\text{child}_j)$$
-
-**Worked Example:**
-```
-Parent: [60 Yes, 40 No]  →  Entropy = 0.97 bits (high uncertainty)
-                |
-    Split on "Age > 30"
-        /              \
-  Age ≤ 30              Age > 30
-  [15 Yes, 35 No]       [45 Yes, 5 No]
-  Entropy = 0.86         Entropy = 0.44
-
-Weighted child entropy = (50/100)×0.86 + (50/100)×0.44 = 0.65
-Information Gain = 0.97 - 0.65 = 0.32 bits ← this split is good!
-```
-
-The algorithm tries ALL possible features and ALL possible thresholds, picks the one with **highest IG** (or lowest Gini).
-
-**Gini vs Entropy:**
-- Gini is computationally cheaper (no log)
-- Both usually give similar trees (~98% agreement)
-- Entropy tends to produce more balanced trees
-- Sklearn default = Gini
+**Gini vs Entropy (Common Interview Question):**
+- Gini is computationally cheaper (no logarithms).
+- Entropy tends to produce slightly more balanced trees.
+- In practice, they perform almost identically. Sklearn's default is Gini.
 
 ```
                      [Is Income > 50K?]
