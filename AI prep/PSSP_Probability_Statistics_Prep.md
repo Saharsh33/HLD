@@ -1,7 +1,7 @@
-# 📊 PSSP — Probability, Statistics, Sampling & Linear Algebra
+# PSSP — Probability, Statistics, Sampling & Linear Algebra
 ### Interview Prep Notes — ZS / Fractal / Tiger Analytics / PwC
 > **Depth**: Intermediate → Advanced | **Rounds**: R1 (30 min screening) + R2 (60 min deep dive)
-> **Senior Advice**: _"PSSP k notes utha k hypothesis aur Alpha and all ka significance"_ — Hypothesis Testing, p-values, α, and significance levels are **heavily tested**. Know them cold.
+> Hypothesis Testing, p-values, α, and significance levels are **heavily tested**. Know them cold.
 
 ---
 
@@ -30,7 +30,7 @@ Probability measures how likely an event is to occur. Two schools of thought:
 | **Law of Total Probability** | $P(A) = \sum_i P(A|B_i) P(B_i)$ | Partition must be exhaustive & mutually exclusive |
 | **Complement Rule** | $P(A') = 1 - P(A)$ | Use for "at least one" problems: $P(\geq 1) = 1 - P(\text{none})$ |
 
-### 🔥 Independent vs Mutually Exclusive — The #1 Confusion
+### Independent vs Mutually Exclusive — The #1 Confusion
 
 These are **completely different concepts**. Let's nail this:
 
@@ -105,7 +105,7 @@ $E[(X-\mu)^2]$ is the definition (average squared distance from mean). $E[X^2] -
 **Q3 (Hard — Bayesian setup):** _1% of population has disease. Test is 99% sensitive, 95% specific. You test positive. What's P(disease)?_
 > Use Bayes' Theorem → P(D|+) = (0.99 × 0.01) / (0.99×0.01 + 0.05×0.99) ≈ **16.7%** — This shocks interviewers. Low base rate kills precision.
 
-**🚩 Red Flags:**
+**Red Flags:**
 - Confusing independent with mutually exclusive
 - Forgetting to check if partition is exhaustive before applying total probability
 - Not recognizing base rate problems
@@ -164,7 +164,7 @@ $$f(x) = \frac{1}{\sigma\sqrt{2\pi}} \exp\left(-\frac{(x-\mu)^2}{2\sigma^2}\righ
 - Sum of independent normals: $X \sim N(\mu_1, \sigma_1^2), Y \sim N(\mu_2, \sigma_2^2) \Rightarrow X+Y \sim N(\mu_1+\mu_2, \sigma_1^2+\sigma_2^2)$
 - **Skewness** = 0 (symmetric), **Kurtosis** = 3 (mesokurtic)
 
-**Skewness (🔥 Frequently Asked):**
+**Skewness (Frequently Asked):**
 $$\text{Skewness} = \frac{E[(X-\mu)^3]}{\sigma^3}$$
 - Positive skew → right tail longer → **Mean > Median > Mode**
 - Negative skew → left tail longer → **Mean < Median < Mode**
@@ -302,12 +302,12 @@ $$r = \frac{\sum(x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum(x_i-\bar{x})^2 \cdot 
 ---
 
 # ═══════════════════════════════════════════════
-# TOPIC 5: HYPOTHESIS TESTING 🔥 HEAVILY TESTED
+# TOPIC 5: HYPOTHESIS TESTING — HEAVILY TESTED
 # ═══════════════════════════════════════════════
 
 ## 1. CORE MECHANICS & INTUITION
 
-> **🔥 This is the #1 topic seniors flagged. Master this inside-out.**
+> This is the #1 tested topic. Master this inside-out.
 
 **The Framework:**
 ```
@@ -423,7 +423,7 @@ Fail to Reject H₀ (NOT "accept H₀")
 
 ## 4. REAL-WORLD APPLICATIONS
 
-**A/B Testing (🔥 Interview Favorite):**
+**A/B Testing (Frequently Asked):**
 - H₀: No difference between control (A) and treatment (B)
 - H₁: Treatment has a different conversion rate
 - **Pitfalls:**
@@ -451,7 +451,7 @@ Fail to Reject H₀ (NOT "accept H₀")
 > 5. Don't peek — commit to a sample size upfront
 > 6. Use Bonferroni/FDR correction if testing multiple metrics
 
-**🚩 Red Flags:**
+**Red Flags:**
 - Saying "accept H₀" instead of "fail to reject H₀"
 - Interpreting p-value as P(H₀ is true)
 - Not mentioning effect size alongside significance
@@ -493,7 +493,7 @@ n = analysis.solve_power(effect_size=0.5, alpha=0.05, power=0.8)
 print(f"Required n per group: {n:.0f}")  # ~64
 ```
 
-**📌 5-Bullet Quick Revision:**
+**5-Bullet Quick Revision:**
 1. **p-value** = P(data this extreme | H₀ true). Reject H₀ if p < α. NEVER say "accept H₀".
 2. **α** = Type I error rate (false positive). **β** = Type II error rate (false negative). **Power = 1 - β**.
 3. **Statistical Significance ≠ Practical Significance** — always report effect size alongside p-value.
@@ -624,7 +624,7 @@ Where $\bar{d}$ = mean of differences, $s_d$ = std dev of differences, $n$ = num
 ---
 
 # ═══════════════════════════════════════════════
-# TOPIC 9: BAYES' THEOREM 🔥
+# TOPIC 9: BAYES' THEOREM
 # ═══════════════════════════════════════════════
 
 ## 1. CORE MECHANICS & INTUITION
@@ -807,7 +807,7 @@ svd = TruncatedSVD(n_components=2)
 X_lsa = svd.fit_transform(X_tfidf)  # Latent Semantic Analysis
 ```
 
-**📌 5-Bullet Quick Revision:**
+**5-Bullet Quick Revision:**
 1. **Eigenvectors** = directions preserved under transformation; **eigenvalues** = scaling factors. PCA uses eigenvalues of covariance matrix.
 2. **SVD** = $U\Sigma V^T$ works for any matrix. Truncated SVD = best rank-k approximation (lossy compression).
 3. $\hat{\beta}_{\text{OLS}} = (X^TX)^{-1}X^Ty$ — fails when $X^TX$ is singular (**multicollinearity** → use regularization or pseudo-inverse).
@@ -816,7 +816,7 @@ X_lsa = svd.fit_transform(X_tfidf)  # Latent Semantic Analysis
 
 ---
 
-# 🎯 PSSP MASTER REVISION TABLE
+# PSSP MASTER REVISION TABLE
 
 | Topic | Key Formula | #1 Interview Trap | Quick Fact |
 |---|---|---|---|

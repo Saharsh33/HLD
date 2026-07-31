@@ -1,14 +1,14 @@
-# 🤖 ML & DL — Machine Learning & Deep Learning
+# ML & DL — Machine Learning & Deep Learning
 ### Interview Prep Notes — ZS / Fractal / Tiger Analytics / PwC
 > **Depth**: Intermediate → Advanced | **Rounds**: R1 (30 min — ML heavy, Lin/Log regression focus) + R2 (60 min — Live Coding + Deep Dive)
-> **Senior Advice**: _"Boosting bagging dekh lena bhut karte hai"_ — Ensemble methods are **heavily tested**.
-> _"KNN neighbour 1 woh overfit hoga ya underfit"_ — Know bias-variance for every algorithm.
-> _"Linear regression ki properties — Homoscedasticity, No Multicollinearity, Independence, Normality, Linearity"_ — OLS assumptions are **non-negotiable**.
+> Ensemble methods (boosting, bagging) are **heavily tested**.
+> Know bias-variance for every algorithm.
+> OLS assumptions are **non-negotiable**.
 
 ---
 
 # ═══════════════════════════════════════════════
-# TOPIC 1: LINEAR REGRESSION 🔥 MOST ASKED IN R1
+# TOPIC 1: LINEAR REGRESSION — MOST ASKED IN R1
 # ═══════════════════════════════════════════════
 
 ## 1. CORE MECHANICS & INTUITION
@@ -30,7 +30,7 @@ y │         ●
 
 **OLS = Projection:** $\hat{y} = X(X^TX)^{-1}X^Ty$ — this projects $y$ onto the column space of $X$. The residuals $e = y - \hat{y}$ are **orthogonal** to the feature space.
 
-### 🔥 5 OLS ASSUMPTIONS (MUST MEMORIZE — "LINE + H")
+### 5 OLS ASSUMPTIONS (MUST MEMORIZE — "LINE + H")
 
 | # | Assumption | What It Means | What Happens When Violated | Fix |
 |---|---|---|---|---|
@@ -130,7 +130,7 @@ $$R^2 = 1 - \frac{SS_{\text{res}}}{SS_{\text{tot}}} = 1 - \frac{\sum(y_i - \hat{
 **Q4 (Follow-up):** _"Is Linear Regression a parametric or non-parametric model?"_
 > **Parametric** — it assumes a fixed functional form ($y = X\beta + \epsilon$) with a finite number of parameters. Non-parametric models (KNN, decision trees) don't assume a fixed form.
 
-**🚩 Red Flags:**
+**Red Flags:**
 - Not knowing the 5 assumptions
 - Thinking R² is sufficient for model evaluation (use Adj-R², AIC, residual plots)
 - Not mentioning feature scaling isn't needed for OLS (but needed for gradient descent and regularized versions)
@@ -172,7 +172,7 @@ print(vif_data)  # VIF > 5 → suspect, VIF > 10 → problematic
 
 **Complexity:** Closed-form $O(np^2 + p^3)$ — $p^3$ for matrix inversion. GD: $O(np)$ per iteration.
 
-**📌 5-Bullet Quick Revision:**
+**5-Bullet Quick Revision:**
 1. **OLS** minimizes $\sum(y_i - \hat{y}_i)^2$. Closed form: $\hat{\beta} = (X^TX)^{-1}X^Ty$.
 2. **5 Assumptions (LINE+H)**: Linearity, Independence, Normality, Equal Variance, No Multicollinearity.
 3. **R² always increases** with more features → use **Adjusted R²** or **AIC/BIC** for model selection.
@@ -182,7 +182,7 @@ print(vif_data)  # VIF > 5 → suspect, VIF > 10 → problematic
 ---
 
 # ═══════════════════════════════════════════════
-# TOPIC 2: LOGISTIC REGRESSION 🔥 MOST ASKED IN R1
+# TOPIC 2: LOGISTIC REGRESSION — MOST ASKED IN R1
 # ═══════════════════════════════════════════════
 
 ## 1. CORE MECHANICS & INTUITION
@@ -320,7 +320,7 @@ $$P(y=k|x) = \frac{e^{z_k}}{\sum_{j=1}^{K} e^{z_j}}$$
 > - **Spam filter**: Higher threshold (e.g., 0.7) → avoid marking legitimate emails as spam (high precision)
 > - Use **Precision-Recall curve** and pick threshold at desired operating point
 
-**🚩 Red Flags:**
+**Red Flags:**
 - Using accuracy for imbalanced datasets
 - Not knowing the loss function (log-loss, not MSE)
 - Confusing probability output with a hard classification
@@ -363,7 +363,7 @@ for feat, coef in zip(feature_names, model.coef_[0]):
     print(f"{feat}: β={coef:.3f}, OR={np.exp(coef):.3f}")
 ```
 
-**📌 5-Bullet Quick Revision:**
+**5-Bullet Quick Revision:**
 1. Logistic Regression uses **sigmoid** to output probabilities. Loss = **Binary Cross-Entropy** (convex, not MSE).
 2. **Coefficients** are in **log-odds**. Exponentiate ($e^\beta$) to get **odds ratios**.
 3. **No closed-form** — uses gradient descent. Same gradient form as linear regression: $X^T(\hat{p}-y)/n$.
@@ -479,12 +479,12 @@ The algorithm tries ALL possible features and ALL possible thresholds, picks the
 ---
 
 # ═══════════════════════════════════════════════
-# TOPIC 4: BAGGING & RANDOM FORESTS 🔥
+# TOPIC 4: BAGGING & RANDOM FORESTS
 # ═══════════════════════════════════════════════
 
 ## 1. CORE MECHANICS & INTUITION
 
-> **🔥 "Boosting bagging dekh lena bhut karte hai" — This WILL be asked.**
+> Ensemble methods (bagging vs boosting) are a top interview topic.
 
 **Bagging (Bootstrap Aggregating):**
 - **Goal:** Reduce **variance** (stabilize unstable models like decision trees)
@@ -592,7 +592,7 @@ importances = pd.Series(rf.feature_importances_, index=feature_names)
 print(importances.sort_values(ascending=False).head(10))
 ```
 
-**📌 5-Bullet Quick Revision:**
+**5-Bullet Quick Revision:**
 1. **Bagging** reduces variance by averaging bootstrap-sampled models. RF adds **feature randomness** to decorrelate trees.
 2. Each bootstrap sample uses ~63.2% of data. Remaining ~36.8% = **OOB** (free validation).
 3. `max_features = √p` (classification), `p/3` (regression). Lower = more randomness = less variance.
@@ -659,7 +659,7 @@ print(f"AUC: {scores.mean():.4f} ± {scores.std():.4f}")
 ---
 
 # ═══════════════════════════════════════════════
-# TOPIC 5: BOOSTING (AdaBoost, Gradient Boosting, XGBoost, LightGBM) 🔥
+# TOPIC 5: BOOSTING (AdaBoost, Gradient Boosting, XGBoost, LightGBM)
 # ═══════════════════════════════════════════════
 
 ## 1. CORE MECHANICS & INTUITION
@@ -843,7 +843,7 @@ lgb_model.fit(X_train, y_train,
               callbacks=[lgb.early_stopping(50), lgb.log_evaluation(50)])
 ```
 
-**📌 5-Bullet Quick Revision:**
+**5-Bullet Quick Revision:**
 1. **Bagging = parallel, reduces variance. Boosting = sequential, reduces bias.** Both are ensemble methods.
 2. Gradient Boosting fits each new tree to **residuals** (negative gradient of loss).
 3. XGBoost uses **2nd-order Taylor expansion** (gradient + Hessian) for faster, better splits.
@@ -999,7 +999,7 @@ selected = [f for f, c in zip(feature_names, lasso.coef_) if c != 0]
 print(f"Selected features: {selected}")
 ```
 
-**📌 5-Bullet Quick Revision:**
+**5-Bullet Quick Revision:**
 1. **L1 (Lasso)** = sparsity / feature selection. **L2 (Ridge)** = shrinkage / handles multicollinearity.
 2. Ridge has a **closed form**: $(X^TX + \lambda I)^{-1}X^Ty$. Lasso does not (uses coordinate descent).
 3. **↑ λ = ↑ bias, ↓ variance**. Optimal λ found via cross-validation.
@@ -1048,7 +1048,7 @@ Error
 | Boosted Trees | **Low** | Low-Med | Boosting reduces bias |
 | Neural Network (large) | Low | High | Needs regularization (dropout, etc.) |
 
-> **🔥 "KNN neighbour 1 woh overfit hoga ya underfit?"** — **OVERFITS (low bias, high variance).** K=1 means each prediction = its nearest neighbor, essentially memorizing the training data. Noisy points directly affect predictions.
+> K=1 **OVERFITS (low bias, high variance).** Each prediction = its nearest neighbor, essentially memorizing the training data. Noisy points directly affect predictions.
 
 ## 2. TOP INTERVIEW QUESTIONS
 
@@ -1262,7 +1262,7 @@ High Variance           Low Variance
 → OVERFIT              → UNDERFIT                 → Just Right
 ```
 
-**🔥 "KNN neighbour 1 woh overfit hoga ya underfit" → OVERFIT (K=1 memorizes training data, 0% training error)**
+**K=1 → OVERFIT (memorizes training data, 0% training error)**
 
 ## 2. TOP INTERVIEW QUESTIONS
 
@@ -1565,7 +1565,7 @@ $$\min_{U,V} \sum_{(i,j) \in \text{observed}} (r_{ij} - \mathbf{u}_i^T \mathbf{v
 
 ---
 
-# 🎯 ML & DL MASTER REVISION TABLE
+# ML & DL MASTER REVISION TABLE
 
 | Topic | Key Formula / Concept | #1 Interview Trap | Quick Fact |
 |---|---|---|---|
